@@ -1,0 +1,10 @@
+{
+  "name": "simple-server-request",
+  "version": "1.0.0",
+  "main": "./src/simpleRequest.js",
+  "author": "shmilky",
+  "dependencies": {
+    "query-string": "6.1.0",
+    "request": "2.88.0"
+  }
+}
