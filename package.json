@@ -1,10 +1,24 @@
 {
   "name": "simple-server-request",
-  "version": "1.0.0",
+  "version": "2.0.2",
   "main": "./src/simpleRequest.js",
   "author": "shmilky",
+  "engines": {
+    "node": ">=8"
+  },
+  "devDependencies": {
+    "babel-jest": "20.0.3",
+    "fetch-mock": "5.13.1",
+    "jest": "20.0.4",
+    "jest-cli": "20.0.4",
+    "nock": "^10.0.6"
+  },
   "dependencies": {
     "query-string": "6.1.0",
     "request": "2.88.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "npm test -- --watch"
   }
 }

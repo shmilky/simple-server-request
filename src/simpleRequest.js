@@ -17,79 +17,80 @@ function getErrObjectFromRes(res) {
     return res.errorMessage || `${res.statusCode} error of message "${res.statusMessage}"`
 }
 
-module.exports.get = function (path, queryParams, cb) {
-    if (!path || path.length === 0) {
-        cb && cb('pathNotValid');
-
-        return;
-    }
-
-    if (typeof queryParams === 'function') {
-        cb = queryParams;
-        queryParams = null;
-    }
+function constructUrlWithQueryString (path, queryParams={}) {
+    queryParams = stringify(queryParams);
 
     // Add ? at the end of the path if there are query params and it's needed
-    if (queryParams && Object.keys(queryParams).length > 0 && path[path.length - 1] !== '?') {
-        path += '?'
+    if (queryParams.length > 0 && path[path.length - 1] !== '?') {
+        path += '?' + queryParams;
     }
 
-    path += stringify(queryParams);
+    return path;
+}
 
-    request.get({
-        url: path,
-        json: true,
-        timeout: GET_TIMEOUT,
-    }, function(err, res, body) {
-        let resData = body;
 
-        if (body && body.data) {
-            resData = body.data;
-        }
-
+function handleResponseFactory (resolve, reject) {
+    return function (err, res, body) {
         if (!err && res.statusCode === 200) {
-            cb && cb(null, resData);
+            resolve(body.data || body);
         }
         else {
-            cb && cb((res && getErrObjectFromRes(res)) || err);
+            reject(err || getErrObjectFromRes(res));
+        }
+    }
+}
+
+module.exports.handleResponseFactory = handleResponseFactory;
+module.exports.constructUrlWithQueryString = constructUrlWithQueryString;
+
+module.exports.get = function (path, queryParams={}, headers={}) {
+    console.log(`get req for path ${path} with query params ${JSON.stringify(queryParams)}`);
+
+    return new Promise(function (resolve, reject) {
+        if (!path || path.length === 0) {
+            reject('pathNotValid');
+        }
+        else {
+            request.get({
+                url: constructUrlWithQueryString(path, queryParams),
+                headers,
+                json: true,
+                timeout: GET_TIMEOUT,
+            }, handleResponseFactory(resolve, reject));
         }
     });
 };
 
-module.exports.post = function (path, body, cb) {
-    request.post({
-        url: path,
-        json: true,
-        timeout: POST_TIMEOUT,
-        body: body,
-    }, function(err, res, body) {
-        if (!err && res.statusCode === 200) {
-            cb && cb(null, body.data || body);
+module.exports.post = function (path, body={}, headers={}) {
+    return new Promise(function (resolve, reject) {
+        if (!path || path.length === 0) {
+            reject('pathNotValid');
         }
         else {
-            cb && cb(err || getErrObjectFromRes(res));
+            request.post({
+                url: path,
+                headers,
+                json: true,
+                timeout: POST_TIMEOUT,
+                body: body,
+            }, handleResponseFactory(resolve, reject));
         }
     });
 };
 
-/**
- * Send a put request to designated path
- * @param path - full path of the request
- * @param body - post content
- * @param cb - (optional) callback for the response
- */
-module.exports.put = function (path, body, cb) {
-    request.put({
-        url: path,
-        json: true,
-        timeout: POST_TIMEOUT,
-        body: body,
-    }, function (err, res, body) {
-        if (!err && res.statusCode === 200) {
-            cb && cb(null, body.data || body);
+module.exports.put = function (path, body={}, headers={}) {
+    return new Promise(function (resolve, reject) {
+        if (!path || path.length === 0) {
+            reject('pathNotValid');
         }
         else {
-            cb && cb(err || getErrObjectFromRes(res));
+            request.put({
+                url: path,
+                headers,
+                json: true,
+                timeout: POST_TIMEOUT,
+                body: body,
+            }, handleResponseFactory(resolve, reject));
         }
     });
 };
