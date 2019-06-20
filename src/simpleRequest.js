@@ -94,3 +94,21 @@ module.exports.put = function (path, body={}, headers={}) {
         }
     });
 };
+
+module.exports.delete = function (path, queryParams={}, headers={}) {
+    console.log(`get req for path ${path} with query params ${JSON.stringify(queryParams)}`);
+
+    return new Promise(function (resolve, reject) {
+        if (!path || path.length === 0) {
+            reject('pathNotValid');
+        }
+        else {
+            request.delete({
+                url: constructUrlWithQueryString(path, queryParams),
+                headers,
+                json: true,
+                timeout: GET_TIMEOUT,
+            }, handleResponseFactory(resolve, reject));
+        }
+    });
+};
